@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src='test-helpers.js'></script>
+<script src='messaging-helpers.js'></script>
+<script id="inline_script">
+  'use strict'
+
+  if (window.parent) {
+    window.parent.postMessage('LOADED', '*');
+  }
+  if (window.opener) {
+    window.opener.postMessage('LOADED', '*');
+  }
+
+  add_message_event_handlers(self, undefined, '*');
+</script>
