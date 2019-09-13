@@ -29,7 +29,7 @@ setup(() => {
         // Now play and wait for a second resize event.
         const playPromise = video.play();
         if (playPromise) {
-          playPromise.catch(() => {});
+          playPromise.catch(t.unreached_func("play rejected"));
         }
         await eventWatcher.wait_for(['playing', 'resize']);
         assert_equals(video.videoWidth, 300, 'width after second resize event');
