@@ -21,7 +21,7 @@ setup(() => {
         video.src = `/media/400x300-red-resize-300x150-green.${format}`;
         video.preload = 'auto';
         document.body.appendChild(video);
-        const eventWatcher = new EventWatcher(t, video, ['error', 'resize', 'playing']);
+        const eventWatcher = new EventWatcher(t, video, ['resize', 'playing', 'error', 'ended']);
         await eventWatcher.wait_for(['resize']);
         assert_equals(video.videoWidth, 400, 'width after first resize event');
         assert_equals(video.videoHeight, 300, 'height after first resize event');
