@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<title>Prefixed CSS Transition events</title>
+<link rel="help" href="https://compat.spec.whatwg.org/#transition-event-handlers">
+
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+
+<style>
+.baseStyle {
+  width: 100px;
+  transition: width 1ms;
+}
+
+.transition {
+  width: 200px;
+}
+</style>
+
+<body></body>
+
+<script>
+'use strict';
+
+// Creates a div element, appends it to the document body and removes the
+// created element during test cleanup.
+function createDiv(test) {
+  const element = document.createElement('div');
+  element.classList.add('baseStyle');
+  document.body.appendChild(element);
+  test.add_cleanup(() => {
+    //element.remove();
+  });
+  return element;
+}
+
+// Adds an event handler for |eventName| (calling |callback|) to the given
+// |target|, that will automatically be cleaned up at the end of the test.
+function addTestScopedEventHandler(test, target, eventName, callback) {
+  assert_not_equals(
+      target[eventName], undefined, eventName + ' must be defined');
+  target[eventName] = function() {
+    callback()
+  };
+  // We need this cleaned up even if the event handler doesn't run.
+  test.add_cleanup(() => {
+    target[eventName] = null;
+  });
+}
+
+// Adds an event listener for |eventName| (calling |callback|) to the given
+// |target|, that will automatically be cleaned up at the end of the test.
+function addTestScopedEventListener(test, target, eventName, callback) {
+  function listener() {
+    callback();
+  }
+  target.addEventListener(eventName, listener);
+  // We need this cleaned up even if the event handler doesn't run.
+  test.add_cleanup(() => {
+    target.removeEventListener(eventName, listener);
+  });
+}
+
+// We use promise_tests because we need an asynchronous test model with the
+// guarantee that one test will finish before another begins (since we are
+// dealing with event listeners).
+
+promise_test(t => {
+  const div = createDiv(t);
+  getComputedStyle(div).width;
+
+  let receivedWebkitTransitionEnd = false;
+  // TODO: use 'div' not 'window'.
+  addTestScopedEventHandler(t, window, 'ontransitionend', () => {
+    receivedWebkitTransitionEnd = true;
+  });
+
+  div.classList.add('transition');
+  return new Promise((resolve, reject) => {
+    addTestScopedEventListener(t, div, 'transitionend', () => {
+      // rAF once to give the expected event time to come through.
+      requestAnimationFrame(() => {
+        if (receivedWebkitTransitionEnd)
+          resolve('success');
+        else
+          reject('did not receive onwebkittransitionend event');
+      });
+    });
+  });
+}, 'onwebkittransitionend event handler should trigger');
+
+promise_test(t => {
+  const div = createDiv(t);
+  getComputedStyle(div).width;
+
+  let receivedWebkitTransitionEnd = false;
+  // TODO: use 'div' not 'window'.
+  addTestScopedEventHandler(t, window, 'onwebkittransitionend', () => {
+    receivedWebkitTransitionEnd = true;
+  });
+  addTestScopedEventHandler(t, window, 'ontransitionend', () => {});
+
+  div.classList.add('transition');
+  return new Promise((resolve, reject) => {
+    addTestScopedEventListener(t, div, 'transitionend', () => {
+      // rAF once to give the expected event time to come through.
+      requestAnimationFrame(() => {
+        if (receivedWebkitTransitionEnd)
+          reject('unexpected onwebkittransitionend event received');
+        else
+          resolve('success');
+      });
+    });
+  });
+}, 'onwebkittransitionend event handler should not trigger if an unprefixed '
+    + 'version also exists');
+
+promise_test(t => {
+  const div = createDiv(t);
+  getComputedStyle(div).width;
+
+  let receivedWebkitTransitionEnd = false;
+  addTestScopedEventListener(t, div, 'webkitTransitionEnd', () => {
+    receivedWebkitTransitionEnd = true;
+  });
+
+  div.classList.add('transition');
+  return new Promise((resolve, reject) => {
+    // TODO: use 'div' not 'window'.
+    addTestScopedEventHandler(t, window, 'ontransitionend', () => {
+      // rAF once to give the expected event time to come through.
+      requestAnimationFrame(() => {
+        if (receivedWebkitTransitionEnd)
+          resolve('success');
+        else
+          reject('did not receive webkitTransitionEnd event');
+      });
+    });
+  });
+}, 'webkitTransitionEnd event listener should trigger');
+
+promise_test(t => {
+  const div = createDiv(t);
+  getComputedStyle(div).width;
+
+  let receivedWebkitTransitionEnd = false;
+  addTestScopedEventListener(t, div, 'webkitTransitionEnd', () => {
+    receivedWebkitTransitionEnd = true;
+  });
+  addTestScopedEventListener(t, div, 'transitionend', () => {});
+
+  div.classList.add('transition');
+  return new Promise((resolve, reject) => {
+    // TODO: use 'div' not 'window'.
+    addTestScopedEventHandler(t, window, 'ontransitionend', () => {
+      // rAF once to give the expected event time to come through.
+      requestAnimationFrame(() => {
+        if (receivedWebkitTransitionEnd)
+          reject('unexpectedly receieved webkitTransitionEnd event');
+        else
+          resolve('success');
+      });
+    });
+  });
+}, 'webkitTransitionEnd event listener should not trigger if an unprefixed '
+    + 'version also exists');
+
+promise_test(t => {
+  const div = createDiv(t);
+  getComputedStyle(div).width;
+
+  // Deliberately lower-case, to test case-sensitivity.
+  let receivedWebkitTransitionEnd = false;
+  addTestScopedEventListener(t, div, 'webkittransitionend', () => {
+    receivedWebkitTransitionEnd = true;
+  });
+
+  div.classList.add('transition');
+  return new Promise((resolve, reject) => {
+    // TODO: use 'div' not 'window'.
+    addTestScopedEventHandler(t, window, 'ontransitionend', () => {
+      // rAF once to give the expected event time to come through.
+      requestAnimationFrame(() => {
+        if (receivedWebkitTransitionEnd)
+          reject('unexpectedly received webkittransitionend event');
+        else
+          resolve('success');
+      });
+    });
+  });
+}, 'webkitTransitionEnd event listener is case sensitive');
+</script>

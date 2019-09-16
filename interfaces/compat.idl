@@ -11,3 +11,13 @@ partial interface Window {
 partial interface HTMLBodyElement {
     attribute EventHandler onorientationchange;
 };
+
+partial interface mixin GlobalEventHandlers {
+  attribute EventHandler onwebkitanimationstart;
+  attribute EventHandler onwebkitanimationiteration;
+  attribute EventHandler onwebkitanimationend;
+};
+
+partial interface mixin GlobalEventHandlers {
+  attribute EventHandler onwebkittransitionend;
+};
