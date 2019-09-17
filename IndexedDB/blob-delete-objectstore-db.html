@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>IndexedDB: Blob Deleting an Object Store</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
+</head>
+<body>
+
+<iframe id="frame0"></iframe>
+<iframe id="frame1"></iframe>
+<iframe id="frame2"></iframe>
+
+<script>
+
+indexeddb_test(
+    function upgrade(t, db) {
+      store0 = db.createObjectStore('store0');
+      store1 = db.createObjectStore('store1');
+
+      blobAContent = "First blob content";
+      blobA = new Blob([blobAContent], {"type" : "text/plain"});
+      key = "blob key";
+      store0.put(blobA, key);
+    },
+    function success(t, db) {
+      db.close();
+      var dbname = location + '-' + t.name;
+      var request = indexedDB.open(dbname, 2);
+
+      request.onupgradeneeded = t.step_func(function(e) {
+        db = e.target.result;
+        db.deleteObjectStore('store0');
+
+        request.onsuccess = t.step_func(function() {
+          blobBContent = "Second blob content";
+          trans = db.transaction('store1', 'readwrite');
+          store1 = trans.objectStore('store1');
+          blobB = new Blob([blobBContent], {"type" : "text/plain"});
+          store1.put(blobB, key);
+
+          trans.oncomplete = t.step_func(function() {
+            db.close();
+            var delete_request = indexedDB.deleteDatabase(dbname);
+
+            delete_request.onsuccess = function() {
+              t.done();
+            };
+
+            request.onerror = t.unreached_func("Request should not fail.");
+          });
+
+          trans.onabort = t.unreached_func("Transaction should not be aborted.");
+        });
+      });
+      request.onsuccess = t.unreached_func("Request should not succeed without an upgrade.");
+      request.onerror = t.unreached_func("Request should not fail.");
+      request.onblocked = t.unreached_func("Request should not be blocked.");
+    }, "Deleting an object store and a database containing blobs doesn't crash.");
+
+</script>
+</body>
+</html>

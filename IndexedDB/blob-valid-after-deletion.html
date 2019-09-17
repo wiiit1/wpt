@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>IndexedDB: Blob Valid After Deletion</title>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="support.js"></script>
+</head>
+<body>
+
+<iframe id="frame0"></iframe>
+<iframe id="frame1"></iframe>
+<iframe id="frame2"></iframe>
+
+<script>
+indexeddb_test(
+  function upgrade(t, db) {
+    db.createObjectStore('store');
+  },
+  function success(t, db) {
+    blobAContent = "Blob A content";
+    blobBContent = "Blob B content";
+    var blobA = new Blob([blobAContent], {"type" : "text/plain"});
+    var blobB = new Blob([blobBContent], {"type" : "text/plain"});
+    key = "key"
+    value = { a0: blobA, a1: blobA, b0: blobB };
+
+    var tx = db.transaction('store', 'readwrite');
+    var store = tx.objectStore('store');
+
+    store.put(value, key);
+    value = null;
+
+    trans = db.transaction('store');
+    store = trans.objectStore('store');
+    request = store.get(key);
+
+    request.onsuccess = t.step_func(function() {
+      record = request.result;
+
+      trans.oncomplete = t.step_func(function() {
+        trans = db.transaction('store', 'readwrite');
+        store = trans.objectStore('store');
+        request = store.delete(key);
+
+        trans.oncomplete = t.step_func(function() {
+          urlA0 = URL.createObjectURL(record.a0);
+          urlA1 = URL.createObjectURL(record.a1);
+          urlB = URL.createObjectURL(record.b0);
+          document.getElementById('frame0').src = urlA0;
+          document.getElementById('frame0').onload = verify;
+          document.getElementById('frame1').src = urlA1;
+          document.getElementById('frame1').onload = verify;
+          document.getElementById('frame2').src = urlB;
+          document.getElementById('frame2').onload = verify;
+
+          var loadCount = 0;
+          function verify() {
+            if (++loadCount < 3)
+              return;
+            URL.revokeObjectURL(urlA0);
+            URL.revokeObjectURL(urlA1);
+            URL.revokeObjectURL(urlB);
+
+            assert_equals(document.getElementById('frame0').contentDocument.body.innerText, blobAContent);
+            assert_equals(document.getElementById('frame1').contentDocument.body.innerText, blobAContent);
+            assert_equals(document.getElementById('frame2').contentDocument.body.innerText, blobBContent);
+
+            t.done();
+          }
+        });
+      });
+    });
+  },
+  "Blobs stay alive after their records are deleted.");
+</script>
+</body>
+</html>
