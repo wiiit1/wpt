@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/run-test-in-portal.js"></script>
+<body>
+<script>
+  var portalSrc =
+      'resources/portal-manipulate-history-with-subframes.sub.html';
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testIFrameSrcInPortal');
+  }, 'Setting iframe src navigates with replacement');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testCrossSiteIFrameSrcInPortal');
+  }, 'Setting cross site iframe src navigates with replacement');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testIFrameNavInPortal');
+  }, 'iframe navigates itself with replacement');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testCrossSiteIFrameNavInPortal');
+  }, 'Cross site iframe navigates itself with replacement');
+</script>
+</body>

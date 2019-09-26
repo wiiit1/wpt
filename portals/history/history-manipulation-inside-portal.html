@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<script src="/resources/testharness.js"></script>
+<script src="/resources/testharnessreport.js"></script>
+<script src="resources/run-test-in-portal.js"></script>
+<body>
+<script>
+  var portalSrc =
+      'resources/portal-manipulate-history.html';
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testHistoryPushStateInPortal');
+  }, 'history.pushState navigates with replacement in a portal');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testHistoryReplaceStateInPortal');
+  }, 'history.replaceState should be allowed in a portal');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testLocationAssignInPortal');
+  }, 'location.assign navigates with replacement in a portal');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testLocationReplaceInPortal');
+  }, 'location.replace should be allowed in a portal');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testSetLocationHrefInPortal');
+  }, 'Setting location.href navigates with replacement');
+
+  promise_test(() => {
+    return runTestInPortal(portalSrc, 'testSyntheticAnchorClickInPortal');
+  }, 'Synthetic anchor click navigates with replacement');
+</script>
+</body>
