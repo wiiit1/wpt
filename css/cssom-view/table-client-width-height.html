@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<title>CSSOM Test: Table's clientWidth/Height</title>
+<link rel="help" href="https://www.w3.org/TR/CSS2/tables.html#separated-borders" />
+<link rel="help" href="https://www.w3.org/TR/CSS2/tables.html#collapsing-borders" />
+<link rel="help" href="https://drafts.csswg.org/cssom-view/#extension-to-the-element-interface" />
+<script src=/resources/testharness.js></script>
+<script src=/resources/testharnessreport.js></script>
+<style>
+  table#border-separated {
+    border-collapse: separate;
+  }
+  table#border-collapsed {
+    border-collapse: collapse;
+  }
+  .with-td-border td {
+    border: 8px solid #faa;
+  }
+  table#with-own-border {
+    border: 8px solid #faa;
+  }
+</style>
+<table id="border-separated" class="with-td-border">
+  <tbody>
+    <tr>
+      <td>a</td>
+      <td>b</td>
+    </tr>
+    <tr>
+      <td>c</td>
+      <td>d</td>
+    </tr>
+  </tbody>
+</table>
+<table id="border-collapsed" class="with-td-border">
+  <tbody>
+    <tr>
+      <td>e</td>
+      <td>f</td>
+    </tr>
+    <tr>
+      <td>g</td>
+      <td>h</td>
+    </tr>
+  </tbody>
+</table>
+<table id="with-own-border">
+  <tbody>
+    <tr>
+      <td>h</td>
+      <td>i</td>
+    </tr>
+    <tr>
+      <td>j</td>
+      <td>k</td>
+    </tr>
+  </tbody>
+</table>
+<script type="text/javascript">
+  var borderSeparatedTable = document.getElementById("border-separated");
+  var borderCollapsedTable = document.getElementById("border-collapsed");
+  var withOwnBorderTable = document.getElementById("with-own-border");
+  test(function() {
+    assert_equals(borderSeparatedTable.clientWidth,borderSeparatedTable.offsetWidth);
+    assert_equals(borderSeparatedTable.clientHeight,borderSeparatedTable.offsetHeight);
+    assert_equals(borderCollapsedTable.clientWidth,borderCollapsedTable.offsetWidth);
+    assert_equals(borderCollapsedTable.clientHeight,borderCollapsedTable.offsetHeight);
+    assert_equals(withOwnBorderTable.clientWidth, withOwnBorderTable.offsetWidth);
+    assert_equals(withOwnBorderTable.clientHeight, withOwnBorderTable.offsetHeight);
+  }, "Table's clientWidth/Height and OffsetWidth/Height should be the same");
+</script>
